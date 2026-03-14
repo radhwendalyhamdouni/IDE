@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المرجع IDE - الإعداد</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      direction: rtl;
+      overflow: hidden;
+    }
+    
+    .container {
+      text-align: center;
+      padding: 40px;
+      max-width: 500px;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      animation: pulse 2s infinite;
+    }
+    
+    .logo svg {
+      width: 48px;
+      height: 48px;
+      fill: white;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .subtitle {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-bottom: 40px;
+    }
+    
+    .progress-container {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: #334155;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+    
+    .step-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #f1f5f9;
+    }
+    
+    .step-message {
+      font-size: 13px;
+      color: #94a3b8;
+      min-height: 20px;
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 32px;
+    }
+    
+    .feature {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+      color: #93c5fd;
+    }
+    
+    .feature-icon {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #3b82f6;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .status-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .success { color: #22c55e; }
+    .error { color: #ef4444; }
+    .warning { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+      </svg>
+    </div>
+    
+    <h1>المرجع IDE</h1>
+    <p class="subtitle">أول بيئة تطوير عربية بذكاء اصطناعي</p>
+    
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="step-name" id="stepName">جاري الإعداد...</div>
+      <div class="step-message" id="stepMessage">الرجاء الانتظار</div>
+    </div>
+    
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🚀</div>
+        <div>سرعة فائقة</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🤖</div>
+        <div>ذكاء اصطناعي محلي</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🌍</div>
+        <div>دعم عربي كامل</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <div>Vibe Coding</div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const progressFill = document.getElementById('progressFill');
+    const stepName = document.getElementById('stepName');
+    const stepMessage = document.getElementById('stepMessage');
+    
+    const stepNames = {
+      'checking': 'التحقق من المتطلبات',
+      'installing-ollama': 'تثبيت Ollama',
+      'starting-ollama': 'تشغيل Ollama',
+      'checking-models': 'التحقق من النماذج',
+      'downloading-model': 'تحميل نموذج الذكاء الاصطناعي',
+      'downloading': 'جاري التحميل',
+      'installing': 'جاري التثبيت',
+      'verifying': 'التحقق من التثبيت',
+      'complete': 'اكتمل الإعداد!',
+      'error': 'حدث خطأ',
+      'warning': 'تحذير',
+      'installed': 'مثبت بالفعل',
+    };
+    
+    // استقبال تحديثات التقدم
+    window.electronAPI?.on('setup:progress', (data) => {
+      const { step, progress, message } = data;
+      
+      progressFill.style.width = `${progress}%`;
+      stepName.textContent = stepNames[step] || step;
+      stepMessage.textContent = message;
+      
+      // تغيير اللون حسب الحالة
+      if (step === 'complete') {
+        progressFill.style.background = 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)';
+      } else if (step === 'error') {
+        progressFill.style.background = 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)';
+      } else if (step === 'warning') {
+        progressFill.style.background = 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)';
+      }
+    });
+  </script>
+</body>
+</html>

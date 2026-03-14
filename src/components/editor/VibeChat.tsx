@@ -20,6 +20,10 @@ import {
   Rocket,
   Globe,
   Smartphone,
+  Cpu,
+  Bot,
+  Zap,
+  Brain,
 } from 'lucide-react';
 
 interface Message {
@@ -28,6 +32,8 @@ interface Message {
   content: string;
   code?: string;
   timestamp: Date;
+  model?: string;
+  fallback?: boolean;
 }
 
 interface VibeChatProps {
@@ -40,6 +46,8 @@ const SUGGESTIONS = [
   { icon: Globe, text: 'أنشئ موقع شخصي', color: 'bg-green-500' },
   { icon: Smartphone, text: 'أنشئ تطبيق مهام', color: 'bg-purple-500' },
   { icon: FileCode, text: 'أنشئ لوحة تحكم', color: 'bg-orange-500' },
+  { icon: Brain, text: 'أنشئ شبكة عصبية', color: 'bg-pink-500' },
+  { icon: Cpu, text: 'أنشئ آلة حاسبة', color: 'bg-cyan-500' },
 ];
 
 export default function VibeChat({ onCodeGenerated, className = '' }: VibeChatProps) {
@@ -47,14 +55,33 @@ export default function VibeChat({ onCodeGenerated, className = '' }: VibeChatPr
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'مرحباً! 👋 أنا مساعدك البرمجي. اكتب ما تريد و سأحوّله إلى كود. جرب أن تكتب "أنشئ موقع" أو "أنشئ تطبيق مهام".',
+      content: 'مرحباً! 👋 أنا مساعدك البرمجي للغة المرجع. اكتب ما تريد بالعربية وسأحوّله إلى كود. جرب كتابة "أنشئ تطبيق مهام" أو "أنشئ متجر إلكتروني".',
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [aiStatus, setAiStatus] = useState<{ available: boolean; model: string }>({
+    available: false,
+    model: 'local',
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // التحقق من حالة AI
+  useEffect(() => {
+    fetch('/api/ai')
+      .then(res => res.json())
+      .then(data => {
+        setAiStatus({
+          available: data.features?.ollamaIntegration || false,
+          model: data.defaultModel || 'local-patterns',
+        });
+      })
+      .catch(() => {
+        setAiStatus({ available: false, model: 'local-patterns' });
+      });
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -85,14 +112,25 @@ export default function VibeChat({ onCodeGenerated, className = '' }: VibeChatPr
 
       const data = await response.json();
 
+      let responseContent = '';
+      if (data.success) {
+        if (data.fallback) {
+          responseContent = 'تم توليد الكود محلياً ✨ (الأنماط المحلية)';
+        } else {
+          responseContent = 'تم توليد الكود بالذكاء الاصطناعي! 🤖✨';
+        }
+      } else {
+        responseContent = 'حدث خطأ، حاول مرة أخرى.';
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.success 
-          ? 'تم توليد الكود! ✨ يمكنك نسخه أو تطبيقه مباشرة.' 
-          : 'حدث خطأ، حاول مرة أخرى.',
+        content: responseContent,
         code: data.code,
         timestamp: new Date(),
+        model: data.model,
+        fallback: data.fallback,
       };
 
       setMessages(prev => [...prev, assistantMessage]);
@@ -105,7 +143,7 @@ export default function VibeChat({ onCodeGenerated, className = '' }: VibeChatPr
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'حدث خطأ في الاتصال. تأكد من الخادم يعمل.',
+        content: 'حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.',
         timestamp: new Date(),
       }]);
     } finally {
@@ -145,7 +183,20 @@ export default function VibeChat({ onCodeGenerated, className = '' }: VibeChatPr
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Vibe Coding</h2>
-            <p className="text-xs text-slate-400">اكتب بالعربية، أحوّل إلى كود</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-slate-400">اكتب بالعربية، أحوّل إلى كود</p>
+              {aiStatus.available ? (
+                <Badge variant="outline" className="text-[10px] bg-green-900/30 text-green-400 border-green-700">
+                  <Bot className="w-3 h-3 mr-1" />
+                  AI
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-[10px] bg-blue-900/30 text-blue-400 border-blue-700">
+                  <Zap className="w-3 h-3 mr-1" />
+                  محلي
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
         <Button
@@ -181,6 +232,11 @@ export default function VibeChat({ onCodeGenerated, className = '' }: VibeChatPr
                       <div className="flex items-center gap-2">
                         <Code2 className="w-4 h-4 text-blue-400" />
                         <span className="text-xs text-slate-300">لغة المرجع</span>
+                        {message.model && (
+                          <Badge variant="outline" className="text-[10px] bg-slate-700 text-slate-300 border-slate-600">
+                            {message.model.includes('ollama') ? 'AI' : 'محلي'}
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
@@ -206,7 +262,7 @@ export default function VibeChat({ onCodeGenerated, className = '' }: VibeChatPr
                         </Button>
                       </div>
                     </div>
-                    <pre className="p-3 text-xs text-slate-300 overflow-x-auto font-mono" dir="rtl">
+                    <pre className="p-3 text-xs text-slate-300 overflow-x-auto font-mono max-h-64 overflow-y-auto" dir="rtl">
                       {message.code}
                     </pre>
                   </div>
@@ -285,6 +341,24 @@ export default function VibeChat({ onCodeGenerated, className = '' }: VibeChatPr
             )}
           </Button>
         </form>
+        
+        {/* Status Bar */}
+        <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500">
+          <div className="flex items-center gap-2">
+            {aiStatus.available ? (
+              <>
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span>AI متصل ({aiStatus.model})</span>
+              </>
+            ) : (
+              <>
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <span>الأنماط المحلية</span>
+              </>
+            )}
+          </div>
+          <span>Ctrl+K للوصول السريع</span>
+        </div>
       </div>
     </div>
   );

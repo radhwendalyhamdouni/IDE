@@ -49,3 +49,22 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Electron
+/dist/
+/release/
+/resources/icon-source.png
+*.node
+
+# Build artifacts
+*.dmg
+*.AppImage
+*.snap
+*.deb
+*.rpm
+*.exe
+*.msi
+
+# OS files
+Thumbs.db
+ehthumbs.db
