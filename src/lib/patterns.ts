@@ -62,10 +62,10 @@ export const PATTERNS: Pattern[] = [
     priority: 100,
     description: 'متغير نصي',
     patterns: [
-      /أنشئ\s+متغير\s+(\w+)\s+يساوي\s+["'](.+?)["']/i,
-      /عرّف\s+متغير\s+(\w+)\s+(?:يساوي|=)\s+["'](.+?)["']/i,
-      /متغير\s+(\w+)\s+=\s+["'](.+?)["']/i,
-      /أنشئ\s+متغير\s+(\w+)\s+بقيمة\s+["'](.+?)["']/i,
+      /أنشئ\s+متغير\s+([\w\u0600-\u06FF]+)\s+يساوي\s+["'](.+?)["']/i,
+      /عرّف\s+متغير\s+([\w\u0600-\u06FF]+)\s+(?:يساوي|=)\s+["'](.+?)["']/i,
+      /متغير\s+([\w\u0600-\u06FF]+)\s+=\s+["'](.+?)["']/i,
+      /أنشئ\s+متغير\s+([\w\u0600-\u06FF]+)\s+بقيمة\s+["'](.+?)["']/i,
     ],
     generator: (m) => `متغير ${m[1]} = "${m[2]}"؛`,
   },
@@ -73,10 +73,10 @@ export const PATTERNS: Pattern[] = [
     priority: 100,
     description: 'متغير رقمي',
     patterns: [
-      /أنشئ\s+متغير\s+(\w+)\s+يساوي\s+(\d+(?:\.\d+)?)/i,
-      /عرّف\s+متغير\s+(\w+)\s+(?:يساوي|=)\s+(\d+(?:\.\d+)?)/i,
-      /متغير\s+(\w+)\s+=\s+(\d+(?:\.\d+)?)/i,
-      /أنشئ\s+متغير\s+(\w+)\s+بقيمة\s+(\d+(?:\.\d+)?)/i,
+      /أنشئ\s+متغير\s+([\w\u0600-\u06FF]+)\s+يساوي\s+(\d+(?:\.\d+)?)/i,
+      /عرّف\s+متغير\s+([\w\u0600-\u06FF]+)\s+(?:يساوي|=)\s+(\d+(?:\.\d+)?)/i,
+      /متغير\s+([\w\u0600-\u06FF]+)\s+=\s+(\d+(?:\.\d+)?)/i,
+      /أنشئ\s+متغير\s+([\w\u0600-\u06FF]+)\s+بقيمة\s+(\d+(?:\.\d+)?)/i,
     ],
     generator: (m) => `متغير ${m[1]} = ${m[2]}؛`,
   },
@@ -84,9 +84,9 @@ export const PATTERNS: Pattern[] = [
     priority: 100,
     description: 'ثابت',
     patterns: [
-      /أنشئ\s+ثابت\s+(\w+)\s+يساوي\s+(.+)/i,
-      /عرّف\s+ثابت\s+(\w+)\s+(?:يساوي|=)\s+(.+)/i,
-      /ثابت\s+(\w+)\s+=\s+(.+)/i,
+      /أنشئ\s+ثابت\s+([\w\u0600-\u06FF]+)\s+يساوي\s+(.+)/i,
+      /عرّف\s+ثابت\s+([\w\u0600-\u06FF]+)\s+(?:يساوي|=)\s+(.+)/i,
+      /ثابت\s+([\w\u0600-\u06FF]+)\s+=\s+(.+)/i,
     ],
     generator: (m) => {
       const value = isNaN(Number(m[2])) ? `"${m[2]}"` : m[2];
@@ -95,15 +95,46 @@ export const PATTERNS: Pattern[] = [
   },
   {
     priority: 99,
+    description: 'متغير بقيمة نصية بدون اقتباس',
+    patterns: [
+      /أنشئ\s+متغير\s+([\w\u0600-\u06FF]+)\s+يساوي\s+(\S+)\s*$/i,
+      /عرّف\s+متغير\s+([\w\u0600-\u06FF]+)\s+يساوي\s+(\S+)\s*$/i,
+      /متغير\s+([\w\u0600-\u06FF]+)\s*=\s*(\S+)\s*$/i,
+    ],
+    generator: (m) => {
+      const value = m[2] ? m[2].trim() : '';
+      // إذا كانت قيمة رقمية، لا تضف اقتباس
+      if (/^\d+(\.\d+)?$/.test(value)) {
+        return `متغير ${m[1]} = ${value}؛`;
+      }
+      // إذا كانت القيمة مقتبسة، استخدمها كما هي
+      if (value.startsWith('"') || value.startsWith("'")) {
+        return `متغير ${m[1]} = ${value}؛`;
+      }
+      // قيمة نصية - أضف اقتباس
+      return `متغير ${m[1]} = "${value}"؛`;
+    },
+  },
+  {
+    priority: 98,
     description: 'متغير عام',
     patterns: [
-      /أنشئ\s+متغير\s+(\w+)(?:\s+يساوي\s+(.+))?/i,
-      /عرّف\s+متغير\s+(\w+)(?:\s+بقيمة\s+(.+))?/i,
+      /أنشئ\s+متغير\s+([\w\u0600-\u06FF]+)\s+يساوي\s+(.+?)(?:\s*[؛;]?\s*)$/i,
+      /عرّف\s+متغير\s+([\w\u0600-\u06FF]+)\s+بقيمة\s+(.+?)(?:\s*[؛;]?\s*)$/i,
     ],
     generator: (m) => {
       if (m[2]) {
-        const value = isNaN(Number(m[2])) && !m[2].startsWith('"') ? `"${m[2]}"` : m[2];
-        return `متغير ${m[1]} = ${value}؛`;
+        const value = m[2].trim();
+        // إذا كانت قيمة رقمية
+        if (/^\d+(\.\d+)?$/.test(value)) {
+          return `متغير ${m[1]} = ${value}؛`;
+        }
+        // إذا كانت قيمة نصية مقتبسة
+        if (value.startsWith('"') || value.startsWith("'")) {
+          return `متغير ${m[1]} = ${value}؛`;
+        }
+        // قيمة نصية بدون اقتباس
+        return `متغير ${m[1]} = "${value}"؛`;
       }
       return `متغير ${m[1]}؛`;
     },
@@ -127,9 +158,9 @@ export const PATTERNS: Pattern[] = [
     priority: 94,
     description: 'طباعة متغير',
     patterns: [
-      /اطبع\s+قيمة\s+(\w+)/i,
-      /اعرض\s+قيمة\s+(\w+)/i,
-      /اطبع\s+المتغير\s+(\w+)/i,
+      /اطبع\s+قيمة\s+([\w\u0600-\u06FF]+)/i,
+      /اعرض\s+قيمة\s+([\w\u0600-\u06FF]+)/i,
+      /اطبع\s+المتغير\s+([\w\u0600-\u06FF]+)/i,
     ],
     generator: (m) => `اطبع(${m[1]})؛`,
   },
@@ -141,8 +172,8 @@ export const PATTERNS: Pattern[] = [
     priority: 90,
     description: 'شرط بسيط',
     patterns: [
-      /إذا\s+(?:كان|كانت)\s+(\w+)\s+(أكبر|أصغر|يساوي|لا\s+يساوي)\s+(.+?)\s+اطبع\s+["'](.+?)["']/i,
-      /إذا\s+(\w+)\s*(>|<|==|!=)\s*(.+?)\s+اطبع\s+["'](.+?)["']/i,
+      /إذا\s+(?:كان|كانت)\s+([\w\u0600-\u06FF]+)\s+(أكبر|أصغر|يساوي|لا\s+يساوي)\s+(.+?)\s+اطبع\s+["'](.+?)["']/i,
+      /إذا\s+([\w\u0600-\u06FF]+)\s*(>|<|==|!=)\s*(.+?)\s+اطبع\s+["'](.+?)["']/i,
     ],
     generator: (m) => {
       const varName = m[1];
@@ -163,7 +194,7 @@ export const PATTERNS: Pattern[] = [
     priority: 89,
     description: 'شرط مع وإلا',
     patterns: [
-      /إذا\s+(?:كان|كانت)\s+(\w+)\s+(أكبر|أصغر|يساوي)\s+(.+?)\s+اطبع\s+["'](.+?)["']\s+(?:وإلا|وإلا)\s+اطبع\s+["'](.+?)["']/i,
+      /إذا\s+(?:كان|كانت)\s+([\w\u0600-\u06FF]+)\s+(أكبر|أصغر|يساوي)\s+(.+?)\s+اطبع\s+["'](.+?)["']\s+(?:وإلا|وإلا)\s+اطبع\s+["'](.+?)["']/i,
     ],
     generator: (m) => {
       const varName = m[1];
@@ -180,7 +211,7 @@ export const PATTERNS: Pattern[] = [
     priority: 88,
     description: 'التحقق من زوجي/فردي',
     patterns: [
-      /إذا\s+(?:كان|كانت)\s+(\w+)\s+(زوجي|فردي)\s+اطبع\s+["'](.+?)["']/i,
+      /إذا\s+(?:كان|كانت)\s+([\w\u0600-\u06FF]+)\s+(زوجي|فردي)\s+اطبع\s+["'](.+?)["']/i,
     ],
     generator: (m) => {
       const condition = m[2] === 'زوجي' ? `${m[1]} % 2 == 0` : `${m[1]} % 2 != 0`;
@@ -195,9 +226,9 @@ export const PATTERNS: Pattern[] = [
     priority: 85,
     description: 'دالة بسيطة',
     patterns: [
-      /أنشئ\s+دالة\s+(\w+)(?:\s+تأخذ\s+(.+?))?(?:\s+ترجع\s+(.+?))?$/i,
-      /عرّف\s+دالة\s+(\w+)(?:\s+بمعاملات\s+(.+?))?(?:\s+ترجع\s+(.+?))?$/i,
-      /اكتب\s+دالة\s+(\w+)(?:\s+\((.+?)\))?$/i,
+      /أنشئ\s+دالة\s+([\w\u0600-\u06FF]+)(?:\s+تأخذ\s+(.+?))?(?:\s+ترجع\s+(.+?))?$/i,
+      /عرّف\s+دالة\s+([\w\u0600-\u06FF]+)(?:\s+بمعاملات\s+(.+?))?(?:\s+ترجع\s+(.+?))?$/i,
+      /اكتب\s+دالة\s+([\w\u0600-\u06FF]+)(?:\s+\((.+?)\))?$/i,
     ],
     generator: (m) => {
       const name = m[1];
@@ -283,7 +314,7 @@ export const PATTERNS: Pattern[] = [
     priority: 78,
     description: 'حلقة طالما',
     patterns: [
-      /طالما\s+(\w+)\s+(أكبر|أصغر|يساوي)\s+(.+?)\s+اطبع\s+["'](.+?)["']/i,
+      /طالما\s+([\w\u0600-\u06FF]+)\s+(أكبر|أصغر|يساوي)\s+(.+?)\s+اطبع\s+["'](.+?)["']/i,
     ],
     generator: (m) => {
       const opMap: Record<string, string> = {
@@ -301,8 +332,8 @@ export const PATTERNS: Pattern[] = [
     priority: 75,
     description: 'إنشاء قائمة',
     patterns: [
-      /أنشئ\s+قائمة\s+(?:باسم\s+)?(\w+)(?:\s+تحتوي\s+على\s+(.+?))?$/i,
-      /عرّف\s+قائمة\s+(\w+)(?:\s+(.+?))?$/i,
+      /أنشئ\s+قائمة\s+(?:باسم\s+)?([\w\u0600-\u06FF]+)(?:\s+تحتوي\s+على\s+(.+?))?$/i,
+      /عرّف\s+قائمة\s+([\w\u0600-\u06FF]+)(?:\s+(.+?))?$/i,
     ],
     generator: (m) => {
       const name = m[1];
@@ -317,8 +348,8 @@ export const PATTERNS: Pattern[] = [
     priority: 74,
     description: 'إضافة لعنصر قائمة',
     patterns: [
-      /أضف\s+(.+?)\s+(?:إلى|الى)\s+القائمة\s+(\w+)/i,
-      /أضف\s+(.+?)\s+(?:إلى|الى)\s+(\w+)/i,
+      /أضف\s+(.+?)\s+(?:إلى|الى)\s+القائمة\s+([\w\u0600-\u06FF]+)/i,
+      /أضف\s+(.+?)\s+(?:إلى|الى)\s+([\w\u0600-\u06FF]+)/i,
     ],
     generator: (m) => {
       const value = isNaN(Number(m[1])) ? `"${m[1]}"` : m[1];
@@ -333,8 +364,8 @@ export const PATTERNS: Pattern[] = [
     priority: 73,
     description: 'إنشاء قاموس',
     patterns: [
-      /أنشئ\s+قاموس\s+(?:باسم\s+)?(\w+)/i,
-      /عرّف\s+قاموس\s+(\w+)/i,
+      /أنشئ\s+قاموس\s+(?:باسم\s+)?([\w\u0600-\u06FF]+)/i,
+      /عرّف\s+قاموس\s+([\w\u0600-\u06FF]+)/i,
     ],
     generator: (m) => `متغير ${m[1]} = {}؛`,
   },
@@ -346,9 +377,9 @@ export const PATTERNS: Pattern[] = [
     priority: 70,
     description: 'إنشاء صنف',
     patterns: [
-      /أنشئ\s+صنف\s+(?:باسم\s+)?(\w+)/i,
-      /عرّف\s+صنف\s+(\w+)/i,
-      /أنشئ\s+نوع\s+(\w+)/i,
+      /أنشئ\s+صنف\s+(?:باسم\s+)?([\w\u0600-\u06FF]+)/i,
+      /عرّف\s+صنف\s+([\w\u0600-\u06FF]+)/i,
+      /أنشئ\s+نوع\s+([\w\u0600-\u06FF]+)/i,
     ],
     generator: (m) => `صنف ${m[1]} {
     // الخصائص
@@ -947,15 +978,50 @@ function generateDefaultCode(prompt: string): string {
   const hasCondition = words.some(w => ['إذا', 'لو', 'شرط'].includes(w));
   const hasLoop = words.some(w => ['كرر', 'طالما', 'لكل', 'حلقة'].includes(w));
   
-  // توليع كود بناءً على الكلمات المفتاحية المكتشفة
+  // توليد كود بناءً على الكلمات المفتاحية المكتشفة
   if (hasPrint) {
     const text = prompt.replace(/اطبع|اعرض|اكتب/g, '').trim();
     return `اطبع("${text || 'مرحباً بالعالم'}")؛`;
   }
   
-  if (hasVariable && numbers.length > 0) {
-    const varName = words[words.indexOf('متغير') + 1] || words[words.indexOf('أنشئ') + 2] || 'قيمة';
-    return `متغير ${varName} = ${numbers[0]}؛`;
+  if (hasVariable) {
+    // البحث عن اسم المتغير
+    let varName = '';
+    let varValue = '';
+    
+    // محاولة استخراج اسم المتغير والقيمة
+    const varMatch = prompt.match(/متغير\s+([\w\u0600-\u06FF]+)(?:\s+يساوي\s+|\s*=\s*)(.+)?$/i);
+    if (varMatch) {
+      varName = varMatch[1];
+      varValue = varMatch[2] ? varMatch[2].trim() : '';
+      
+      // إذا كانت القيمة رقم
+      if (numbers.length > 0 && !varValue) {
+        varValue = numbers[0];
+      }
+      
+      // تحديد نوع القيمة
+      if (varValue) {
+        if (/^\d+(\.\d+)?$/.test(varValue)) {
+          return `متغير ${varName} = ${varValue}؛`;
+        }
+        if (!varValue.startsWith('"') && !varValue.startsWith("'")) {
+          return `متغير ${varName} = "${varValue}"؛`;
+        }
+        return `متغير ${varName} = ${varValue}؛`;
+      }
+      return `متغير ${varName}؛`;
+    }
+    
+    // محاولة بديلة
+    const varIndex = words.indexOf('متغير');
+    if (varIndex !== -1 && varIndex + 1 < words.length) {
+      varName = words[varIndex + 1];
+      if (numbers.length > 0) {
+        return `متغير ${varName} = ${numbers[0]}؛`;
+      }
+      return `متغير ${varName}؛`;
+    }
   }
   
   if (hasFunction) {

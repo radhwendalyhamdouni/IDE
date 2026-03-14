@@ -176,7 +176,7 @@ export default function IDEPage() {
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1">
             <FileCode className="w-3 h-3" />
-            لغة المرجع v3.3.0
+            لغة المرجع v3.4.1
           </span>
           <span className="hidden sm:inline">|</span>
           <span className="hidden sm:inline">الأسطر: {code.split('\n').length}</span>

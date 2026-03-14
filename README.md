@@ -3,7 +3,7 @@
 <div align="center">
 
 ![المرجع IDE](https://img.shields.io/badge/المرجع-IDE-blue?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-3.4.0-green?style=flat-square)
+![Version](https://img.shields.io/badge/version-3.4.1-green?style=flat-square)
 ![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red?style=flat-square)
 
 **أول بيئة تطوير عربية بذكاء اصطناعي محلي**
@@ -30,6 +30,14 @@
 | 🎨 **واجهة عصرية** | تصميم داكن جميل مع shadcn/ui |
 | 📦 **تثبيت تلقائي** | يثبت Ollama والنماذج آلياً |
 | 🌍 **متعدد المنصات** | Windows, macOS, Linux |
+| 🔧 **أنماط محلية محسنة** | 30+ نمط لتوليد الكود مباشرة |
+
+### 🆕 آخر التحديثات (v3.4.1)
+
+- ✅ إصلاح دعم الأحرف العربية في أنماط التوليد
+- ✅ تحسين التعرف على المتغيرات العربية
+- ✅ إضافة أنماط جديدة للتطبيقات الكاملة
+- ✅ تحسين واجهة المستخدم والرسائل
 
 ### 📥 التثبيت
 
