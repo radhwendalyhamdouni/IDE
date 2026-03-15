@@ -1,7 +1,5 @@
-const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, Header, Footer, 
-        AlignmentType, LevelFormat, HeadingLevel, BorderStyle, WidthType, ShadingType, 
-        VerticalAlign, PageNumber, PageBreak, TableOfContents } = require('docx');
-const fs = require('fs');
+import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, Header, Footer, AlignmentType, LevelFormat, HeadingLevel, BorderStyle, WidthType, ShadingType, VerticalAlign, PageNumber, PageBreak, TableOfContents } from 'docx';
+import fs from 'fs';
 
 // Colors
 const colors = {
